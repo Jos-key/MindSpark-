@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json"
+    <title>MindSpark - Learning App</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --danger: #f72585;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e1e5eb;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e1e5eb;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .tab:hover:not(.active) {
+            border-bottom: 3px solid #ccc;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        button.secondary {
+            background-color: #6c757d;
+        }
+        
+        button.danger {
+            background-color: var(--danger);
+        }
+        
+        .note-item {
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .flashcard {
+            perspective: 1000px;
+            margin: 15px 0;
+            cursor: pointer;
+            height: 200px;
+        }
+        
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        
+        .flashcard-back {
+            transform: rotateY(180deg);
+            background: #f8f9fa;
+        }
+        
+        .flashcard-content {
+            text-align: center;
+            font-size: 1.2rem;
+            width: 100%;
+        }
+        
+        .quiz-question {
+            margin-bottom: 30px;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .quiz-option {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--primary);
+        }
+        
+        .quiz-option.selected {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        .quiz-option.correct {
+            border-color: var(--success);
+            background-color: rgba(76, 201, 240, 0.1);
+        }
+        
+        .quiz-option.incorrect {
+            border-color: var(--danger);
+            background-color: rgba(247, 37, 133, 0.1);
+        }
+        
+        .quiz-result {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #6c757d;
+        }
+        
+        .actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MindSpark</h1>
+            <button class="danger">wish the best!!!</button>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="notes">Notes</div>
+            <div class="tab" data-tab="flashcards">Flashcards</div>
+            <div class="tab" data-tab="quiz">Quiz</div>
+        </div>
+        
+        <!-- Notes Tab -->
+        <div class="tab-content active" id="notes">
+            <div class="card">
+                <h2>Create New Note</h2>
+                <form id="noteForm">
+                    <div class="form-group">
+                        <label for="noteTitle">Title</label>
+                        <input type="text" id="noteTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="noteContent">Content</label>
+                        <textarea id="noteContent" required></textarea>
+                    </div>
+                    <button type="submit">Save Note</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>Your Notes</h2>
+                <div id="notesList"></div>
+            </div>
+        </div>
+        
+        <!-- Flashcards Tab -->
+        <div class="tab-content" id="flashcards">
+            <div class="card">
+                <h2>Create New Flashcard</h2>
+                <form id="flashcardForm">
+                    <div class="form-group">
+                        <label for="flashcardQuestion">Question</label>
+                        <input type="text" id="flashcardQuestion" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="flashcardAnswer">Answer</label>
+                        <input type="text" id="flashcardAnswer" required>
+                    </div>
+                    <button type="submit">Save Flashcard</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>Your Flashcards</h2>
+                <div id="flashcardsList"></div>
+            </div>
+        </div>
+        
+        <!-- Quiz Tab -->
+        <div class="tab-content" id="quiz">
+            <div class="card">
+                <h2>Flashcard Quiz</h2>
+                <div id="quizContainer">
+                    <p>Create some flashcards first to generate a quiz.</p>
+                </div>
+                <div id="quizControls" style="display: none;">
+                    <button id="checkQuizBtn">Check Answers</button>
+                    <button id="newQuizBtn" class="secondary">New Quiz</button>
+                </div>
+                <div id="quizResult" class="quiz-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    if (tabId === 'quiz') generateQuiz();
+                });
+            });
+            
+            // Notes functionality
+            const noteForm = document.getElementById('noteForm');
+            const notesList = document.getElementById('notesList');
+            let notes = JSON.parse(localStorage.getItem('notes')) || [];
+            
+            noteForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const title = document.getElementById('noteTitle').value;
+                const content = document.getElementById('noteContent').value;
+                
+                notes.unshift({
+                    id: Date.now(),
+                    title,
+                    content,
+                    createdAt: new Date().toISOString()
+                });
+                
+                saveNotes();
+                renderNotes();
+                noteForm.reset();
+            });
+            
+            function renderNotes() {
+                if (notes.length === 0) {
+                    notesList.innerHTML = '<div class="empty-state">No notes yet. Create your first note above!</div>';
+                    return;
+                }
+                
+                notesList.innerHTML = '';
+                notes.forEach(note => {
+                    const noteElement = document.createElement('div');
+                    noteElement.className = 'note-item';
+                    noteElement.innerHTML = `
+                        <h3>${note.title}</h3>
+                        <p>${note.content}</p>
+                        <div class="actions">
+                            <button class="danger" onclick="deleteNote(${note.id})">Delete</button>
+                        </div>
+                    `;
+                    notesList.appendChild(noteElement);
+                });
+            }
+            
+            window.deleteNote = function(id) {
+                notes = notes.filter(note => note.id !== id);
+                saveNotes();
+                renderNotes();
+            };
+            
+            function saveNotes() {
+                localStorage.setItem('notes', JSON.stringify(notes));
+            }
+            
+            // Flashcards functionality
+            const flashcardForm = document.getElementById('flashcardForm');
+            const flashcardsList = document.getElementById('flashcardsList');
+            let flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
+            
+            flashcardForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const question = document.getElementById('flashcardQuestion').value;
+                const answer = document.getElementById('flashcardAnswer').value;
+                
+                flashcards.unshift({
+                    id: Date.now(),
+                    question,
+                    answer,
+                    createdAt: new Date().toISOString()
+                });
+                
+                saveFlashcards();
+                renderFlashcards();
+                flashcardForm.reset();
+            });
+            
+            function renderFlashcards() {
+                if (flashcards.length === 0) {
+                    flashcardsList.innerHTML = '<div class="empty-state">No flashcards yet. Create your first flashcard above!</div>';
+                    return;
+                }
+                
+                flashcardsList.innerHTML = '';
+                flashcards.forEach(card => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'flashcard';
+                    cardElement.innerHTML = `
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                <div class="flashcard-content">${card.question}</div>
+                            </div>
+                            <div class="flashcard-back">
+                                <div class="flashcard-content">${card.answer}</div>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="danger" onclick="deleteFlashcard(${card.id})">Delete</button>
+                        </div>
+                    `;
+                    
+                    cardElement.addEventListener('click', function(e) {
+                        if (!e.target.closest('button')) {
+                            this.classList.toggle('flipped');
+                        }
+                    });
+                    
+                    flashcardsList.appendChild(cardElement);
+                });
+            }
+            
+            window.deleteFlashcard = function(id) {
+                flashcards = flashcards.filter(card => card.id !== id);
+                saveFlashcards();
+                renderFlashcards();
+            };
+            
+            function saveFlashcards() {
+                localStorage.setItem('flashcards', JSON.stringify(flashcards));
+            }
+            
+            // Quiz functionality
+            const quizContainer = document.getElementById('quizContainer');
+            const quizControls = document.getElementById('quizControls');
+            const quizResult = document.getElementById('quizResult');
+            const checkQuizBtn = document.getElementById('checkQuizBtn');
+            const newQuizBtn = document.getElementById('newQuizBtn');
+            
+            function generateQuiz() {
+                if (flashcards.length < 4) {
+                    quizContainer.innerHTML = '<p>You need at least 4 flashcards to generate a quiz.</p>';
+                    quizControls.style.display = 'none';
+                    return;
+                }
+                
+                quizContainer.innerHTML = '';
+                quizResult.innerHTML = '';
+                
+                const shuffled = [...flashcards].sort(() => 0.5 - Math.random());
+                const quizFlashcards = shuffled.slice(0, Math.min(10, flashcards.length));
+                
+                quizFlashcards.forEach((card, index) => {
+                    const wrongAnswers = [...flashcards]
+                        .filter(c => c.id !== card.id)
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, 3)
+                        .map(c => c.answer);
+                    
+                    const allAnswers = [...wrongAnswers, card.answer].sort(() => 0.5 - Math.random());
+                    
+                    const questionElement = document.createElement('div');
+                    questionElement.className = 'quiz-question';
+                    questionElement.innerHTML = `
+                        <h3>Question ${index + 1}: ${card.question}</h3>
+                        <div class="quiz-options">
+                            ${allAnswers.map(answer => `
+                                <div class="quiz-option" data-correct="${answer === card.answer}" onclick="selectAnswer(this)">
+                                    ${answer}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    quizContainer.appendChild(questionElement);
+                });
+                
+                quizControls.style.display = 'flex';
+            }
+            
+            window.selectAnswer = function(element) {
+                const options = element.parentElement.querySelectorAll('.quiz-option');
+                options.forEach(opt => opt.classList.remove('selected'));
+                element.classList.add('selected');
+            };
+            
+            checkQuizBtn.addEventListener('click', function() {
+                const questions = quizContainer.querySelectorAll('.quiz-question');
+                let correctCount = 0;
+                
+                questions.forEach(question => {
+                    const selectedOption = question.querySelector('.quiz-option.selected');
+                    if (selectedOption) {
+                        const isCorrect = selectedOption.getAttribute('data-correct') === 'true';
+                        
+                        question.querySelectorAll('.quiz-option').forEach(opt => {
+                            if (opt.getAttribute('data-correct') === 'true') {
+                                opt.classList.add('correct');
+                            } else {
+                                opt.classList.add('incorrect');
+                            }
+                        });
+                        
+                        if (isCorrect) correctCount++;
+                    }
+                });
+                
+                const totalQuestions = questions.length;
+                const percentage = Math.round((correctCount / totalQuestions) * 100);
+                
+                quizResult.innerHTML = `
+                    You scored ${correctCount} out of ${totalQuestions} (${percentage}%)!
+                    ${percentage >= 80 ? '🎉 Great job!' : percentage >= 50 ? '👍 Good effort!' : 'Keep practicing!'}
+                `;
+            });
+            
+            newQuizBtn.addEventListener('click', generateQuiz);
+            
+            // Clear all data
+            document.getElementById('clearAllBtn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete all notes and flashcards?')) {
+                    notes = [];
+                    flashcards = [];
+                    saveNotes();
+                    saveFlashcards();
+                    renderNotes();
+                    renderFlashcards();
+                    quizContainer.innerHTML = '<p>Create some flashcards first to generate a quiz.</p>';
+                    quizControls.style.display = 'none';
+                }
+            });
+            
+            // Initial render
+            renderNotes();
+            renderFlashcards();
+        });
+    </script>
+    <script type="text/javascript">
+
+if('serviceWorker' in navigator) {
+
+navigator.serviceWorker.register('/service-worker.js')
+
+.then(()=>console.log("Service worker registered"))
+
+.catch((error)=>console.log("Service worker failed", error));
+
+}
+
+</script>
+</body>
+</html>
